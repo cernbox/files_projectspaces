@@ -1,7 +1,6 @@
 <?php
 
 use OC\Files\ObjectStore\EosUtil;
-use OC\Files\ObjectStore\EosUtilSecure;
 use OCA\Files_ProjectSpaces\Helper;
 
 OCP\JSON::checkLoggedIn();
@@ -9,50 +8,42 @@ OCP\JSON::checkLoggedIn();
 $l = \OC::$server->getL10N('files');
 
 try {
+	$data = array();
+
 	$permissions = (\OCP\Constants::PERMISSION_ALL & ~\OCP\Constants::PERMISSION_SHARE);
 
 	$sortAttribute = isset($_GET['sort']) ? (string)$_GET['sort'] : 'name';
 	$sortDirection = isset($_GET['sortdirection']) ? ($_GET['sortdirection'] === 'desc') : false;
 
-	/*$files = [];
-	$fromDB = \OC_DB::prepare("SELECT DISTINCT file_source FROM oc_share WHERE file_target LIKE '/  project %'")->execute()->fetchAll();
-	foreach($fromDB as $projectDB)
+	$files = [];
+	
+	$user = \OC_User::getUser();
+	$project = EosUtil::getProjectNameForUser($user);
+	if($project)
 	{
-		$fid = $projectDB['file_source'];
-		$eosInfo = \OC\Files\ObjectStore\EosUtil::getFileById($fid);
-		$eosInfo['custom_perm'] = EosUtilSecure::hasReadPermissions($eosInfo['sys.acl']) ? '1' : '0';
+		$eosPath = rtrim(EosUtil::getEosProjectPrefix(), '/') . '/' . $project;
+		$eosInfo = EosUtil::getFileByEosPath($eosPath);
+		$eosInfo['custom_perm'] = '1';
 		$files[] = $eosInfo;
-	}*/
-	
-	$files = EosUtil::getFolderContents(EosUtil::getEosProjectPrefix());
-	
-	foreach($files as $index => $file)
-	{
-		$name = basename($file['eospath']);
-		if(strlen($name) < 2)
-		{
-			unset($files[$index]);
-			continue;
-		}
-		
-		$user = EosUtil::getUserForProjectName($name);
-		
-		if($user && $user == \OC_User::getUser())
-		{
-			$file['custom_perm'] = '1';
-		}
-		else if(!$file || !isset($file['sys.acl']) || !EosUtilSecure::hasReadPermissions($file['sys.acl']))
-		{
-			$file['custom_perm'] = '0';
-		}
-		else
-		{
-			$file['custom_perm'] = '1';
-		}
-		
-		$files[$index] = $file;
 	}
+	else
+	{
+		$groups = \OC_Group::getUserGroups($user);
+		$sqlPlaceHolder = str_repeat('?,', count($groups));	
+		$groups[] = $user;
+		$sqlPlaceHolder .= '?';
 	
+		$sql = "SELECT DISTINCT file_source FROM oc_share WHERE file_target LIKE '/  project %' AND share_with IN ($sqlPlaceHolder)";
+		$fromDB = \OC_DB::prepare($sql)->execute($groups)->fetchAll();
+		foreach($fromDB as $projectDB)
+		{
+			$fid = $projectDB['file_source'];
+			$eosInfo = \OC\Files\ObjectStore\EosUtil::getFileById($fid);
+			$eosInfo['custom_perm'] = '1';
+			$files[] = $eosInfo;
+		}
+	}
+
 	$files = Helper::sortFiles($files, $sortAttribute, $sortDirection);
 
 	$files = \OCA\Files\Helper::populateTags($files);

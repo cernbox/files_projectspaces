@@ -5,36 +5,70 @@ if (!OCA.ProjectSpaces)
 
 OCA.ProjectSpaces.App = 
 {
-	_inFileList: null,
+	allProjectsList: null,
+	personalList: null,
 	
-	initialize: function($el) 
+	initializeAll: function($el) 
 	{
-		if (this._inFileList) 
+		if (this.allProjectsList) 
 		{
-			return this._inFileList;
+			return this.allProjectsList;
 		}
-
-		this._inFileList = new OCA.ProjectSpaces.FileList(
+		
+		this.allProjectsList = new OCA.ProjectSpaces.FileList(
 			$el,
 			{
 				id: 'projectspaces.self',
 				scrollContainer: $('#app-content'),
-				fileActions: this._createFileActions()
+				fileActions: this._createFileActions(),
+				personalPage: false
 			}
 		);
 
-		this._inFileList.appName = t('files_projectspaces', 'Project spaces repository');
-		this._inFileList.$el.find('#emptycontent').html('<div class="icon-settings"></div>' +
+		this.allProjectsList.appName = t('files_projectspaces', 'Project spaces repository');
+		this.allProjectsList.$el.find('#emptycontent').html('<div class="icon-settings"></div>' +
 			'<h2>' + t('files_projectspaces', 'No contents in this folder') + '</h2>' +
 			'<p>' + t('files_projectspaces', 'Files from project spaces (That you are allowed to see) will appear here') + '</p>');
-		return this._inFileList;
+		return this.allProjectsList;
+	},
+	
+	initializePersonal: function($el)
+	{
+		if (this.personalList) 
+		{
+			return this.personalList;
+		}
+		
+		this.personalList = new OCA.ProjectSpaces.FileList(
+			$el,
+			{
+				id: 'projectspaces-personal.self',
+				scrollContainer: $('#app-content'),
+				fileActions: this._createFileActions(),
+				personalPage: true
+			}
+		);
+
+		this.personalList.appName = t('files_projectspaces', 'Project spaces repository');
+		this.personalList.$el.find('#emptycontent').html('<div class="icon-settings"></div>' +
+			'<h2>' + t('files_projectspaces', 'No contents in this folder') + '</h2>' +
+			'<p>' + t('files_projectspaces', 'Files from project spaces (That you are allowed to see) will appear here') + '</p>');
+		return this.personalList;
 	},
 
-	removeContent: function() 
+	removeAllContent: function() 
 	{
-		if (this._inFileList) 
+		if (this.allProjectsList) 
 		{
-			this._inFileList.$fileList.empty();
+			this.allProjectsList.$fileList.empty();
+		}
+	},
+	
+	removePersonalContent: function()
+	{
+		if(this.personalList)
+		{
+			this.personalList.$fileList.empty();
 		}
 	},
 
@@ -43,7 +77,10 @@ OCA.ProjectSpaces.App =
 	 */
 	destroy: function() 
 	{
-		this.removeContent();
+		this.removeAllContent();
+		this.removePersonalContent();
+		this.allProjectsList = null;
+		this.personalList = null;
 	},
 
 	_createFileActions: function() 
@@ -72,13 +109,23 @@ OCA.ProjectSpaces.App =
 
 $(document).ready(function() 
 {
+	OCA.Files.TagsPlugin.allowedLists.push('projectspaces.self');
+	OCA.Files.TagsPlugin.allowedLists.push('projectspaces-personal.self');
 	$('#app-content-projectspaces').on('show', function(e) 
 	{
-		OCA.ProjectSpaces.App.initialize($(e.target));
+		OCA.ProjectSpaces.App.initializeAll($(e.target));
 	});
 	$('#app-content-projectspaces').on('hide', function() 
 	{
-		OCA.ProjectSpaces.App.destroy();
+		OCA.ProjectSpaces.App.removeAllContent();
+	});
+	$('#app-content-projectspaces-personal').on('show', function(e)
+	{
+		OCA.ProjectSpaces.App.initializePersonal($(e.target));
+	});
+	$('#app-content-projectspaces-personal').on('hide', function()
+	{
+		OCA.ProjectSpaces.App.removePersonalContent();
 	});
 });
 

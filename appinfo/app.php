@@ -24,5 +24,14 @@ $eventDispatcher->addListener
 	"appname" => 'files_projectspaces',
 	"script" => 'list.php',
 	"order" => 30,
-	"name" => /*$l->t(*/'Project Spaces'//)
+	"name" => /*$l->t(*/'All projects'//)
+]);
+
+\OCA\Files\App::getNavigationManager()->add(
+[
+	"id" => 'projectspaces-personal',
+	"appname" => 'files_projectspaces',
+	"script" => 'list.php',
+	"order" => 40,
+	"name" => /*$l->t(*/'Your projects'//)
 ]);

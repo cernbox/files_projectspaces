@@ -6,7 +6,7 @@
 	FileList.prototype = _.extend({}, OCA.Files.FileList.prototype,
 		/** @lends OCA.Sharing.FileList.prototype */ {
 		appName: 'Project Spaces',
-		id: 'projectspaces',
+		isPersonal: false,
 
 		/**
 		 * @private
@@ -19,6 +19,8 @@
 			OCA.Files.FileList.prototype.initialize.apply(this, arguments);
 			
 			OC.Plugins.attach('OCA.ProjectSpaces.FileList', this);
+			
+			this.isPersonal = options.personalPage;
 			
 			this.initialized = true;
 		},
@@ -34,6 +36,18 @@
 			
 			return $tr;
 		},
+		
+		getListAJAXUrl: function()
+		{
+			if(this.isPersonal)
+			{
+				return OC.filePath('files_projectspaces', 'ajax', 'personal_list.php');
+			}
+			else
+			{
+				return OC.filePath('files_projectspaces', 'ajax', 'list.php');
+			}
+		},
 
 		reload: function() {
 			this._selectedFiles = {};
@@ -48,7 +62,7 @@
 				this._reloadCall.abort();
 			}
 			this._reloadCall = $.ajax({
-				url: OC.filePath('files_projectspaces', 'ajax', 'list.php'),
+				url: this.getListAJAXUrl(),
 				data: {
 					dir : this.getCurrentDirectory(),
 					sort: this._sort,
@@ -104,10 +118,6 @@
 			if (result.status === 0){
 				return true;
 			}
-
-			// TODO: should rather return upload file size through
-			// the files list ajax call
-			this.updateStorageStatistics(true);
 
 			if (result.data.permissions) {
 				this.setDirectoryPermissions(result.data.permissions);

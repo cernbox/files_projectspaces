@@ -17,23 +17,36 @@ class Helper
 		return $data;
 	}
 	
+	private static function readProp($array, $name, $defaultVaule)
+	{
+		if(isset($array[$name]))
+		{
+			return $array[$name];
+		}
+		
+		return $defaultVaule;
+	}
+	
 	public static function formatFileInfo(array $i) {
 		$entry = array();
 	
-		$entry['id'] = $i['fileid'];
-		$entry['parentId'] = $i['parent'];
+		$entry['eospath'] = self::readProp($i, 'eospath', 'unknown');;
+		$entry['custom_perm'] = $i['custom_perm'];
+		
+		$entry['id'] = self::readProp($i, 'fileid', '0');
+		$entry['parentId'] = self::readProp($i, 'parent', '0');
 		$entry['date'] = \OCP\Util::formatDate($i['mtime']);
-		$entry['mtime'] = $i['mtime'] * 1000;
+		$entry['mtime'] = self::readProp($i, 'mtime', 0) * 1000;
 		// only pick out the needed attributes
-		$entry['icon'] = self::determineIcon($i);
+		$entry['icon'] = '/core/img/filetypes/folder-shared.svg';//self::determineIcon($i);
 		$entry['isPreviewAvailable'] = false;
-		$entry['name'] = '  project ' . $i['name'];
+		$entry['name'] = '  project ' . self::readProp($i, 'name', 'unknown');
 		$entry['path'] = '';
-		$entry['permissions'] = $i['permissions'];
-		$entry['mimetype'] = $i['mimetype'];
-		$entry['size'] = $i['size'];
-		$entry['type'] = $i['eostype'] == 'folder' ? 'dir' : 'file';
-		$entry['etag'] = $i['etag'];
+		$entry['permissions'] = self::readProp($i, 'permissions', '0');;
+		$entry['mimetype'] = 'dir-shared';//$i['mimetype'];
+		$entry['size'] = self::readProp($i, 'size', '0');
+		$entry['type'] = self::readProp($i, 'eostype', 'file') == 'folder' ? 'dir' : 'file';
+		$entry['etag'] = self::readProp($i, 'etag', '');;
 		if (isset($i['tags'])) {
 			$entry['tags'] = $i['tags'];
 		}
@@ -55,9 +68,6 @@ class Helper
 		{
 			$entry['cboxid'] = $i['cboxid'];
 		}
-	
-		$entry['eospath'] = $i['eospath'];
-		$entry['custom_perm'] = $i['custom_perm'];
 	
 		return $entry;
 	}
