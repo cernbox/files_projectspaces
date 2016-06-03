@@ -99,7 +99,7 @@ OCA.ProjectSpaces.App =
 			}
 			else
 			{
-				OC.dialogs.alert('You do not have enough permissions to browser ' + filename, 'Error');
+				OC.dialogs.alert('You do not have permission to browse ' + filename, 'Error');
 			}
 		});
 		fileActions.setDefault('dir', 'Open');
