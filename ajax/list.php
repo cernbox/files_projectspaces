@@ -26,6 +26,26 @@ try {
 	
 	$files = EosUtil::getFolderContents(EosUtil::getEosProjectPrefix());
 	
+	$start = ord('a');
+	$end = ord('z') + 1;
+	$rootDir = rtrim(EosUtil::getEosProjectPrefix(), '/') . '/';
+	for($i = $start; $i < $end; $i++)
+	{
+		$curPath = $rootDir . chr($i);
+		$curDir = EosUtil::ls($curPath);
+		if(!$curDir || count($curDir) < 1)
+		{
+			continue;
+		}
+		
+		$temp = EosUtil::getFolderContents($curPath);
+		if($temp)
+		{
+			$files = array_merge($files, $temp);
+		}
+	}
+	
+	
 	foreach($files as $index => $file)
 	{
 		$name = basename($file['eospath']);
