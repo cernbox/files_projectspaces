@@ -2,6 +2,7 @@
 
 use OC\Files\ObjectStore\EosUtil;
 use OC\Files\ObjectStore\EosUtilSecure;
+use OC\Files\ObjectStore\Redis;
 use OCA\Files_ProjectSpaces\Helper;
 
 OCP\JSON::checkLoggedIn();
@@ -14,70 +15,71 @@ try {
 	$sortAttribute = isset($_GET['sort']) ? (string)$_GET['sort'] : 'name';
 	$sortDirection = isset($_GET['sortdirection']) ? ($_GET['sortdirection'] === 'desc') : false;
 
-	/*$files = [];
-	$fromDB = \OC_DB::prepare("SELECT DISTINCT file_source FROM oc_share WHERE file_target LIKE '/  project %'")->execute()->fetchAll();
-	foreach($fromDB as $projectDB)
-	{
-		$fid = $projectDB['file_source'];
-		$eosInfo = \OC\Files\ObjectStore\EosUtil::getFileById($fid);
-		$eosInfo['custom_perm'] = EosUtilSecure::hasReadPermissions($eosInfo['sys.acl']) ? '1' : '0';
-		$files[] = $eosInfo;
-	}*/
+	$data = json_decode(Redis::readFromCacheMap('project_spaces_list', 'all'), TRUE);
 	
-	$files = EosUtil::getFolderContents(EosUtil::getEosProjectPrefix());
-	
-	$start = ord('a');
-	$end = ord('z') + 1;
-	$rootDir = rtrim(EosUtil::getEosProjectPrefix(), '/') . '/';
-	for($i = $start; $i < $end; $i++)
+	$elapsed = time() - (int)$data[0];
+	$files = $data[1];
+	if($elapsed > 1800 || !$files)
 	{
-		$curPath = $rootDir . chr($i);
-		$curDir = EosUtil::ls($curPath);
-		if(!$curDir || count($curDir) < 1)
+		$files = EosUtil::getFolderContents(EosUtil::getEosProjectPrefix());
+		
+		$start = ord('a');
+		$end = ord('z') + 1;
+		$rootDir = rtrim(EosUtil::getEosProjectPrefix(), '/') . '/';
+		for($i = $start; $i < $end; $i++)
 		{
-			continue;
+			$curPath = $rootDir . chr($i);
+			$curDir = EosUtil::ls($curPath);
+			if(!$curDir || count($curDir) < 1)
+			{
+				continue;
+			}
+			
+			$temp = EosUtil::getFolderContents($curPath);
+			if($temp)
+			{
+				$files = array_merge($files, $temp);
+			}
 		}
 		
-		$temp = EosUtil::getFolderContents($curPath);
-		if($temp)
+		
+		foreach($files as $index => $file)
 		{
-			$files = array_merge($files, $temp);
+			$name = basename($file['eospath']);
+			if(strlen($name) < 2)
+			{
+				unset($files[$index]);
+				continue;
+			}
+			
+			$user = EosUtil::getUserForProjectName($name);
+			
+			if($user && $user == \OC_User::getUser())
+			{
+				$file['custom_perm'] = '1';
+			}
+			else if(!$file || !isset($file['sys.acl']) || !EosUtilSecure::hasReadPermissions($file['sys.acl']))
+			{
+				$file['custom_perm'] = '0';
+			}
+			else
+			{
+				$file['custom_perm'] = '1';
+			}
+			
+			$files[$index] = $file;
 		}
+		
+		$files = Helper::sortFiles($files, $sortAttribute, $sortDirection);
+		$files = \OCA\Files\Helper::populateTags($files);
+		$files = Helper::formatFileInfos($files);
+		
+		// Cache them after all modifications have been peformed
+		Redis::writeToCacheMap('project_spaces_list', 'all', json_encode([time(), $files]));
 	}
 	
-	
-	foreach($files as $index => $file)
-	{
-		$name = basename($file['eospath']);
-		if(strlen($name) < 2)
-		{
-			unset($files[$index]);
-			continue;
-		}
-		
-		$user = EosUtil::getUserForProjectName($name);
-		
-		if($user && $user == \OC_User::getUser())
-		{
-			$file['custom_perm'] = '1';
-		}
-		else if(!$file || !isset($file['sys.acl']) || !EosUtilSecure::hasReadPermissions($file['sys.acl']))
-		{
-			$file['custom_perm'] = '0';
-		}
-		else
-		{
-			$file['custom_perm'] = '1';
-		}
-		
-		$files[$index] = $file;
-	}
-	
-	$files = Helper::sortFiles($files, $sortAttribute, $sortDirection);
-
-	$files = \OCA\Files\Helper::populateTags($files);
 	$data['directory'] = '/';
-	$data['files'] = Helper::formatFileInfos($files);
+	$data['files'] = $files; 
 	$data['permissions'] = $permissions;
 
 	OCP\JSON::success(array('data' => $data));
