@@ -2,7 +2,7 @@
 
 namespace OCA\Files_ProjectSpaces;
 
-use \OC\Files\ObjectStore\EosUtil;
+use \OC\Cernbox\Storage\EosUtil;
 
 class Helper
 {
@@ -143,7 +143,7 @@ class Helper
 	public static function buildFileStorageStatistics($dir) 
 	{
 		// information about storage capacities
-		$storageInfo = \OC_Helper::getStorageInfo($dir);
+		$storageInfo = self::getStorageInfo($dir);
 		$l = new \OC_L10N('files');
 		$maxUploadFileSize = \OCP\Util::maxUploadFilesize($dir, $storageInfo['free']);
 		$maxHumanFileSize = \OCP\Util::humanFileSize($maxUploadFileSize);
@@ -161,66 +161,7 @@ class Helper
 	
 	private static function getStorageInfo($path, $rootInfo = null) 
 	{
-		// return storage info without adding mount points
-		$includeExtStorage = \OC_Config::getValue('quota_include_external_storage', false);
-	
-		if (!$rootInfo) {
-			$rootInfo = \OC\Files\ObjectStore\EosUtil::getFileByEosPath($path);
-			//$rootInfo = \OC\Files\Filesystem::getFileInfo($path, false);
-		}
-
-		$used = isset($rootInfo['size'])? $rootInfo['size'] : 0;
-		if ($used < 0) {
-			$used = 0;
-		}
-		$quota = 0;
-		$storage = $rootInfo->getStorage();
-		if ($includeExtStorage && $storage->instanceOfStorage('\OC\Files\Storage\Shared')) {
-			$includeExtStorage = false;
-		}
-		if ($includeExtStorage) {
-			$quota = OC_Util::getUserQuota(\OCP\User::getUser());
-			if ($quota !== \OCP\Files\FileInfo::SPACE_UNLIMITED) {
-				// always get free space / total space from root + mount points
-				return self::getGlobalStorageInfo();
-			}
-		}
-	
-		// TODO: need a better way to get total space from storage
-		if ($storage->instanceOfStorage('\OC\Files\Storage\Wrapper\Quota')) {
-			/** @var \OC\Files\Storage\Wrapper\Quota $storage */
-			$quota = $storage->getQuota();
-		}
-		$free = $storage->free_space('');
-		if ($free >= 0) {
-			$total = $free + $used;
-		} else {
-			$total = $free; //either unknown or unlimited
-		}
-		if ($total > 0) {
-			if ($quota > 0 && $total > $quota) {
-				$total = $quota;
-			}
-			// prevent division by zero or error codes (negative values)
-			$relative = round(($used / $total) * 10000) / 100;
-		} else {
-			$relative = 0;
-		}
-	
-		$ownerId = $storage->getOwner($path);
-		$ownerDisplayName = '';
-		$owner = \OC::$server->getUserManager()->get($ownerId);
-		if($owner) {
-			$ownerDisplayName = $owner->getDisplayName();
-		}
-	
-		return [
-				'free' => $free,
-				'used' => $used,
-				'total' => $total,
-				'relative' => $relative,
-				'owner' => $ownerId,
-				'ownerDisplayName' => $ownerDisplayName,
-		];
+		$owner = EosUtil::getOwner($path);
+		return EosUtil::getUserQuota($owner);
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-use OC\Files\ObjectStore\EosUtil;
+use OC\Cernbox\Storage\EosUtil;
 use OCA\Files_ProjectSpaces\Helper;
 
 OCP\JSON::checkLoggedIn();
@@ -29,22 +29,28 @@ try {
 	else
 	{
 		$groups = \OC_Group::getUserGroups($user);
-		$sqlPlaceHolder = str_repeat('?,', count($groups));	
-		$groups[] = $user;
-		$sqlPlaceHolder .= '?';
-	
-		$sql = "SELECT DISTINCT file_source FROM oc_share WHERE file_target LIKE '/  project %' AND share_with IN ($sqlPlaceHolder)";
-		$fromDB = \OC_DB::prepare($sql)->execute($groups)->fetchAll();
-		foreach($fromDB as $projectDB)
+		
+		$projects = [];
+		$sharePrefix = rtrim(EosUtil::getEosSharePrefix(), '/');
+		foreach($groups as $group)
 		{
-			$fid = $projectDB['file_source'];
-			$eosInfo = \OC\Files\ObjectStore\EosUtil::getFileById($fid);
-			$eosInfo['custom_perm'] = '1';
-			$files[] = $eosInfo;
+			$groupFolder = $sharePrefix . '/group/' . substr($group, 0, 1) . '/' . $group;
+			$contents = EosUtil::getFolderContents($groupFolder);
+			if($contents)
+			{
+				foreach($contents as $file)
+				{
+					if($file['isProjectSpace'] == '1')
+					{
+						$file['custom_perm'] = '1';
+						$projects[] = $file;
+					}
+				}
+			}
 		}
 	}
 
-	$files = Helper::sortFiles($files, $sortAttribute, $sortDirection);
+	$files = Helper::sortFiles($projects, $sortAttribute, $sortDirection);
 
 	$files = \OCA\Files\Helper::populateTags($files);
 	$data['directory'] = '/';

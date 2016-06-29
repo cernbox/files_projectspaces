@@ -1,8 +1,7 @@
 <?php
 
-use OC\Files\ObjectStore\EosUtil;
-use OC\Files\ObjectStore\EosUtilSecure;
-use OC\Files\ObjectStore\Redis;
+use OC\Cernbox\Storage\EosUtil;
+use OC\Cernbox\Storage\Redis;
 use OCA\Files_ProjectSpaces\Helper;
 
 OCP\JSON::checkLoggedIn();
@@ -58,13 +57,14 @@ try {
 			{
 				$file['custom_perm'] = '1';
 			}
-			else if(!$file || !isset($file['sys.acl']) || !EosUtilSecure::hasReadPermissions($file['sys.acl']))
+			else if(!$file || !isset($file['sys.acl']))
 			{
 				$file['custom_perm'] = '0';
 			}
 			else
 			{
-				$file['custom_perm'] = '1';
+				$ocPerm = EosUtil::toOcAcl($file['sys.acl']);
+				$file['custom_perm'] = isset($ocPerm[\OC_User::getUser()])? '1' : '0';
 			}
 			
 			$files[$index] = $file;
