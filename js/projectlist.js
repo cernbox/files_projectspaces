@@ -126,6 +126,19 @@
 			this.setFiles(result.data.files);
 			return true;
 		},
+		
+		setFiles: function(filesArray) 
+        {
+                // Remove sharing possibility
+                $.each(filesArray, function(index, value)
+                {
+                        var perm = parseInt(value['permissions']);
+                        perm = perm & ~OC.PERMISSION_SHARE;
+                        value['permissions'] = perm;
+                });
+                
+                OCA.Files.FileList.prototype.setFiles.apply(this, arguments);
+        }
 	});
 
 
