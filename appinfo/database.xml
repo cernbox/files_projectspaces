@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<database>
+
+	<name>*dbname*</name>
+	<create>true</create>
+	<overwrite>false</overwrite>
+
+	<charset>utf8</charset>
+
+	<table>
+		<name>cernbox_project_mapping</name>
+		<declaration>
+			<field>
+				<name>project_name</name>
+				<type>text</type>
+				<notnull>true</notnull>
+				<length>50</length>
+			</field>
+			<field>
+				<name>eos_relative_path</name>
+				<type>text</type>
+				<notnull>true</notnull>
+				<length>50</length>
+			</field>
+			<field>
+				<name>project_owner</name>
+				<type>text</type>
+				<notnull>true</notnull>
+				<length>50</length>
+			</field>
+
+			<index>
+				<primary>true</primary>
+				<unique>true</unique>
+				<name>eos_projectspaces_mapping_index</name>
+				<field>
+					<name>project_name</name>
+				</field>
+			</index>
+		</declaration>
+	</table>
+
+</database>

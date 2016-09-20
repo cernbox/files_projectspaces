@@ -2,7 +2,7 @@
 
 namespace OCA\Files_ProjectSpaces;
 
-use \OC\Cernbox\Storage\EosUtil;
+use OCP\Files\Cache\ICacheEntry;
 
 class Helper
 {
@@ -17,36 +17,14 @@ class Helper
 		return $data;
 	}
 	
-	private static function readProp($array, $name, $defaultVaule)
-	{
-		if(isset($array[$name]))
-		{
-			return $array[$name];
-		}
-		
-		return $defaultVaule;
-	}
+	public static function formatFileInfo(ICacheEntry $i) {
+		$entry = $i;
 	
-	public static function formatFileInfo(array $i) {
-		$entry = array();
-	
-		$entry['eospath'] = self::readProp($i, 'eospath', 'unknown');;
 		$entry['custom_perm'] = $i['custom_perm'];
-		
-		$entry['id'] = self::readProp($i, 'fileid', '0');
-		$entry['parentId'] = self::readProp($i, 'parent', '0');
-		$entry['date'] = \OCP\Util::formatDate($i['mtime']);
-		$entry['mtime'] = self::readProp($i, 'mtime', 0) * 1000;
-		// only pick out the needed attributes
-		$entry['icon'] = '/core/img/filetypes/folder-shared.svg';//self::determineIcon($i);
 		$entry['isPreviewAvailable'] = false;
-		$entry['name'] = '  project ' . self::readProp($i, 'name', 'unknown');
 		$entry['path'] = '';
-		$entry['permissions'] = self::readProp($i, 'permissions', '0');;
-		$entry['mimetype'] = 'dir-shared';//$i['mimetype'];
-		$entry['size'] = self::readProp($i, 'size', '0');
-		$entry['type'] = self::readProp($i, 'eostype', 'file') == 'folder' ? 'dir' : 'file';
-		$entry['etag'] = self::readProp($i, 'etag', '');;
+		$entry['type'] = $i->getMimeType() === 'httpd/unix-directory' ? 'dir' : 'file';
+
 		if (isset($i['tags'])) {
 			$entry['tags'] = $i['tags'];
 		}
@@ -56,49 +34,39 @@ class Helper
 		if (isset($i['is_share_mount_point'])) {
 			$entry['isShareMountPoint'] = $i['is_share_mount_point'];
 		}
-		
-		
+
 		if (isset($i['extraData'])) {
 			$entry['extraData'] = $i['extraData'];
 		}
-	
-		/** CERNBOX FAVORITES PATCH */
-		// HUGO allow eos attrs to be passed to the web frontend
-		if(isset($i['cboxid']))
-		{
-			$entry['cboxid'] = $i['cboxid'];
-		}
-	
+
+		//$entry['icon'] = '/core/img/filetypes/folder-shared.svg';//self::determineIcon($i);
+		//$entry['name'] = '  project ' . $i->getName();
+		//$entry['mimetype'] = $i->getMimeType();
+		//$entry['size'] = $i->getMimeType();
 		return $entry;
 	}
 	
-	public static function determineIcon($file) 
-	{
-		$icon = \OC_Helper::mimetypeIcon($file['mimetype']);
-		return substr($icon, 0, -3) . 'svg';
-	}
-	
-	public static function compareFileNames(array $a, array $b) {
-		$aType = $a['eostype'];
-		$bType = $b['eostype'];
-		if ($aType === 'folder' and $bType !== 'folder') {
+	public static function compareFileNames(ICacheEntry $a, ICacheEntry $b) {
+		$aType = $a->getMimeType();
+		$bType = $b->getMimeType();
+		if ($aType === 'httpd/unix-directory' and $bType !== 'httpd/unix-directory') {
 			return -1;
-		} elseif ($aType !== 'folder' and $bType === 'folder') {
+		} elseif ($aType !== 'httpd/unix-directory' and $bType === 'httpd/unix-directory') {
 			return 1;
 		} else {
 			return \OCP\Util::naturalSortCompare($a['name'], $b['name']);
 		}
 	}
 	
-	public static function compareTimestamp(array $a, array $b) {
-		$aTime = $a['mtime'];
-		$bTime = $b['mtime'];
+	public static function compareTimestamp(ICacheEntry $a, ICacheEntry $b) {
+		$aTime = $a->getMTime();
+		$bTime = $b->getMTime();
 		return ($aTime < $bTime) ? -1 : 1;
 	}
 	
-	public static function compareSize(array $a, array $b) {
-		$aSize = $a['size'];
-		$bSize = $b['size'];
+	public static function compareSize(ICacheEntry $a, ICacheEntry $b) {
+		$aSize = $a->getSize();
+		$bSize = $b->getSize();
 		return ($aSize < $bSize) ? -1 : 1;
 	}
 	

@@ -2,9 +2,10 @@
 
 namespace OCA\Files_ProjectSpaces;
 
+use OCA\Comments\Activity\Extension;
 use OCP\Activity\IExtension;
 
-class Activity extends IExtension
+class Activity extends Extension
 {
 	const TYPE_PROJECTSPACES = 'projectspaces';
 	

@@ -1,11 +1,15 @@
 <?php
 
-use OC\Cernbox\Storage\EosUtil;
 use OCA\Files_ProjectSpaces\Helper;
 
 OCP\JSON::checkLoggedIn();
 \OC::$server->getSession()->close();
 $l = \OC::$server->getL10N('files');
+
+$projectMapper = \OC::$server->getCernBoxProjectMapper();
+$username = \OC::$server->getUserSession()->getUser()->getUID();
+$instanceManager = \OC::$server->getCernBoxEosInstanceManager();
+$currentInstance = $instanceManager->getCurrentInstance();
 
 try {
 	$data = array();
@@ -18,39 +22,38 @@ try {
 	$files = [];
 	
 	$user = \OC_User::getUser();
-	$project = EosUtil::getProjectNameForUser($user);
-	if($project)
+	//$project = EosUtil::getProjectNameForUser($user);
+	$projectInfo = $projectMapper->getProjectInfoByUser($username);
+	$projectName = $projectInfo->getProjectName();
+	if($projectName)
 	{
-		$eosPath = rtrim(EosUtil::getEosProjectPrefix(), '/') . '/' . $project;
-		$eosInfo = EosUtil::getFileByEosPath($eosPath);
-		$eosInfo['custom_perm'] = '1';
-		$files[] = $eosInfo;
+		$entry = $instanceManager->get($username, 'projects/' . $projectName);
+		//$eosPath = rtrim($currentInstance->getProjectPrefix(), '/') . '/' . $projectName;
+		//$eosInfo = EosUtil::getFileByEosPath($eosPath);
+		//$eosInfo['custom_perm'] = '1';
+		$entry['custom_perm'] = '1';
+		$files[] = $entry;
 	}
 	else
 	{
-		$groups = \OC_Group::getUserGroups($user);
-		
-		$projects = [];
-		$sharePrefix = rtrim(EosUtil::getEosSharePrefix(), '/');
-		foreach($groups as $group)
+		$groups = \OC::$server->getGroupManager()->getUserGroups($username);
+		//$groups = \OC_Group::getUserGroups($user);
+		$sqlPlaceHolder = str_repeat('?,', count($groups));
+		$groups[] = $user;
+		$sqlPlaceHolder .= '?';
+
+		$sql = "SELECT DISTINCT file_source FROM oc_share WHERE file_target LIKE '/  project %' AND share_with IN ($sqlPlaceHolder)";
+		$dbRecords = \OC_DB::prepare($sql)->execute($groups)->fetchAll();
+		foreach($dbRecords as $record)
 		{
-			$groupFolder = $sharePrefix . '/group/' . substr($group, 0, 1) . '/' . $group;
-			$contents = EosUtil::getFolderContents($groupFolder);
-			if($contents)
-			{
-				foreach($contents as $file)
-				{
-					if($file['isProjectSpace'] == '1')
-					{
-						$file['custom_perm'] = '1';
-						$projects[] = $file;
-					}
-				}
-			}
+			$fileID = $record['file_source'];
+			$entry = $instanceManager->getPathById($username, $fileID);
+			$entry['custom_perm'] = '1';
+			$files[] = $entry;
 		}
 	}
 
-	$files = Helper::sortFiles($projects, $sortAttribute, $sortDirection);
+	$files = Helper::sortFiles($files, $sortAttribute, $sortDirection);
 
 	$files = \OCA\Files\Helper::populateTags($files);
 	$data['directory'] = '/';

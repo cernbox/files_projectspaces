@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<info>
+	<id>files_projectspaces</id>
+	<name>Files Project Spaces</name>
+	<description>This app enables project spaces</description>
+	<licence>AGPL</licence>
+	<author>CERNBox Team</author>
+	<version>9.1.2</version>
+	<types>
+		<filesystem/>
+	</types>
+	<dependencies>
+		<owncloud min-version="9.1" max-version="9.1" />
+	</dependencies>
+</info>
