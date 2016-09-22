@@ -7,7 +7,8 @@ OCP\JSON::checkLoggedIn();
 $l = \OC::$server->getL10N('files');
 
 $projectMapper = \OC::$server->getCernBoxProjectMapper();
-$username = \OC::$server->getUserSession()->getUser()->getUID();
+$user = \OC::$server->getUserSession()->getUser();
+$username = $user->getUID();
 $instanceManager = \OC::$server->getCernBoxEosInstanceManager();
 $currentInstance = $instanceManager->getCurrentInstance();
 
@@ -21,12 +22,11 @@ try {
 
 	$files = [];
 	
-	$user = \OC_User::getUser();
 	//$project = EosUtil::getProjectNameForUser($user);
 	$projectInfo = $projectMapper->getProjectInfoByUser($username);
-	$projectName = $projectInfo->getProjectName();
-	if($projectName)
+	if($projectInfo)
 	{
+		$projectName = $projectInfo->getProjectName();
 		$entry = $instanceManager->get($username, 'projects/' . $projectName);
 		//$eosPath = rtrim($currentInstance->getProjectPrefix(), '/') . '/' . $projectName;
 		//$eosInfo = EosUtil::getFileByEosPath($eosPath);
@@ -36,7 +36,7 @@ try {
 	}
 	else
 	{
-		$groups = \OC::$server->getGroupManager()->getUserGroups($username);
+		$groups = \OC::$server->getGroupManager()->getUserGroups($user);
 		//$groups = \OC_Group::getUserGroups($user);
 		$sqlPlaceHolder = str_repeat('?,', count($groups));
 		$groups[] = $user;
