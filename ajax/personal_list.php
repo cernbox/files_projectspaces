@@ -15,7 +15,8 @@ $currentInstance = $instanceManager->getCurrentInstance();
 try {
 	$data = array();
 
-	$permissions = (\OCP\Constants::PERMISSION_ALL & ~\OCP\Constants::PERMISSION_SHARE);
+	//$permissions = (\OCP\Constants::PERMISSION_ALL & ~\OCP\Constants::PERMISSION_SHARE);
+	$permissions = \OCP\Constants::PERMISSION_READ;
 
 	$sortAttribute = isset($_GET['sort']) ? (string)$_GET['sort'] : 'name';
 	$sortDirection = isset($_GET['sortdirection']) ? ($_GET['sortdirection'] === 'desc') : false;
@@ -36,10 +37,10 @@ try {
 	}
 	else
 	{
-		$groups = \OC::$server->getGroupManager()->getUserGroups($user);
+		$groups = \OC::$server->getGroupManager()->getUserGroupIds($user);
 		//$groups = \OC_Group::getUserGroups($user);
 		$sqlPlaceHolder = str_repeat('?,', count($groups));
-		$groups[] = $user;
+		$groups[] = $username;
 		$sqlPlaceHolder .= '?';
 
 		$sql = "SELECT DISTINCT file_source FROM oc_share WHERE file_target LIKE '/  project %' AND share_with IN ($sqlPlaceHolder)";
