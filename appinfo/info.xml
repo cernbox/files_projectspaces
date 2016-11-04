@@ -1,0 +1,11 @@
+<?xml version="1.0"?> 
+<info>
+	<id>files_projectspaces</id>
+	<name>CERNBox Project Spaces</name>
+	<description>This application enables browsing project spaces</description>
+	<licence>AGPL</licence>
+	<author>CERNBox Team</author>
+	<require>8.2.2</require>
+	<shipped>true</shipped>
+	<default_enable/>
+</info>
