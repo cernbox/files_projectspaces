@@ -21,7 +21,7 @@ try {
 	$project = EosUtil::getProjectNameForUser($user);
 	if($project)
 	{
-		$eosPath = rtrim(EosUtil::getEosProjectPrefix(), '/') . '/' . $project;
+		$eosPath = rtrim(EosUtil::getEosProjectPrefix(), '/') . '/' . $project[0] . '/' . $project;
 		$eosInfo = EosUtil::getFileByEosPath($eosPath);
 		$eosInfo['custom_perm'] = '1';
 		$files[] = $eosInfo;
