@@ -32,6 +32,7 @@ try {
 			if($groupManager->isInGroup($username, $info['project_readers']) ||
 				$groupManager->isInGroup($username, $info['project_writers']) ||
 				$groupManager->isInGroup($username, $info['project_admins'])) {
+				$info['custom_perm'] = 1;
 				$projectInfos[] = $info;
 			}
 
