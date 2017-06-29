@@ -1,77 +1,44 @@
-if (!OCA.ProjectSpaces) 
+if (!OCA.EOSBrowser) 
 {
-	OCA.ProjectSpaces = {};
+	OCA.EOSBrowser = {};
 }
 
-OCA.ProjectSpaces.App = 
+OCA.EOSBrowser.App = 
 {
-	allProjectsList: null,
-	personalList: null,
-	
+	allInstancesList: null,
+
 	initializeAll: function($el) 
 	{
-		if (this.allProjectsList) 
+		if (this.allInstancesList)
 		{
-			return this.allProjectsList;
+			return this.allInstancesList;
 		}
 		
-		this.allProjectsList = new OCA.ProjectSpaces.FileList(
+		this.allInstancesList = new OCA.EOSBrowser.FileList(
 			$el,
 			{
-				id: 'projectspaces.self',
+				id: 'eosbrowser.self',
 				scrollContainer: $('#app-content'),
 				fileActions: this._createFileActions(),
 				personalPage: false
 			}
 		);
 
-		this.allProjectsList.appName = t('files_projectspaces', 'Project spaces repository');
-		this.allProjectsList.$el.find('#emptycontent').html('<div class="icon-settings"></div>' +
-			'<h2>' + t('files_projectspaces', 'No contents in this folder') + '</h2>' +
-			'<p>' + t('files_projectspaces', 'Files from project spaces (That you are allowed to see) will appear here') + '</p>');
-		return this.allProjectsList;
+		this.allInstancesList.appName = t('files_eosbrowser', 'EOS Browser');
+		this.allInstancesList.$el.find('#emptycontent').html('<div class="icon-settings"></div>' +
+			'<h2>' + t('files_eosbrowser', 'No contents in this folder') + '</h2>' +
+			'<p>' + t('files_eosbrowser', 'Files from EOS instances that you are allowed to see will appear here') + '</p>');
+		return this.allInstancesList;
 	},
 	
-	initializePersonal: function($el)
+	removeAllContent: function()
 	{
-		if (this.personalList) 
+		if (this.allInstancesList)
 		{
-			return this.personalList;
-		}
-		
-		this.personalList = new OCA.ProjectSpaces.FileList(
-			$el,
-			{
-				id: 'projectspaces-personal.self',
-				scrollContainer: $('#app-content'),
-				fileActions: this._createFileActions(),
-				personalPage: true
-			}
-		);
-
-		this.personalList.appName = t('files_projectspaces', 'Project spaces repository');
-		this.personalList.$el.find('#emptycontent').html('<div class="icon-settings"></div>' +
-			'<h2>' + t('files_projectspaces', 'No contents in this folder') + '</h2>' +
-			'<p>' + t('files_projectspaces', 'Files from project spaces (That you are allowed to see) will appear here') + '</p>');
-		return this.personalList;
-	},
-
-	removeAllContent: function() 
-	{
-		if (this.allProjectsList) 
-		{
-			this.allProjectsList.$fileList.empty();
+			this.allInstancesList.$fileList.empty();
 		}
 	},
 	
-	removePersonalContent: function()
-	{
-		if(this.personalList)
-		{
-			this.personalList.$fileList.empty();
-		}
-	},
-
 	/**
 	 * Destroy the app
 	 */
@@ -79,7 +46,7 @@ OCA.ProjectSpaces.App =
 	{
 		this.removeAllContent();
 		this.removePersonalContent();
-		this.allProjectsList = null;
+		this.allInstancesList = null;
 		this.personalList = null;
 	},
 
@@ -89,16 +56,13 @@ OCA.ProjectSpaces.App =
 		var fileActions = new OCA.Files.FileActions();
 		
 		// We let the default navigation handler to fetch the content (this allow us to use the default
-		// ajax calls implementation by letting ownCloud to resolve the project as a "share")
+		// ajax calls implementation by letting ownCloud to resolve the instance as a "share")
 		fileActions.register('dir', 'Open', OC.PERMISSION_READ, '', function (filename, context) 
 		{
-			if(context.$file.attr('custom_perm') === '1')
-			{
+			if(context.$file.attr('custom_perm') === '1') {
 				OCA.Files.App.setActiveView('files', {silent: true});
 				OCA.Files.App.fileList.changeDirectory(context.$file.attr('data-path') + '/' + filename, true, true);
-			}
-			else
-			{
+			} else {
 				OC.dialogs.alert('You do not have permission to browse ' + filename, 'Error');
 			}
 		});
@@ -109,23 +73,22 @@ OCA.ProjectSpaces.App =
 
 $(document).ready(function() 
 {
-	OCA.Files.TagsPlugin.allowedLists.push('projectspaces.self');
-	OCA.Files.TagsPlugin.allowedLists.push('projectspaces-personal.self');
-	$('#app-content-projectspaces').on('show', function(e) 
+	OCA.Files.TagsPlugin.allowedLists.push('eosbrowser.self');
+	$('#app-content-eosbrowser').on('show', function(e)
 	{
-		OCA.ProjectSpaces.App.initializeAll($(e.target));
+		OCA.EOSBrowser.App.initializeAll($(e.target));
 	});
-	$('#app-content-projectspaces').on('hide', function() 
+	$('#app-content-eosbrowser').on('hide', function() 
 	{
-		OCA.ProjectSpaces.App.removeAllContent();
+		OCA.EOSBrowser.App.removeAllContent();
 	});
-	$('#app-content-projectspaces-personal').on('show', function(e)
+	$('#app-content-eosbrowser-personal').on('show', function(e)
 	{
-		OCA.ProjectSpaces.App.initializePersonal($(e.target));
+		OCA.EOSBrowser.App.initializePersonal($(e.target));
 	});
-	$('#app-content-projectspaces-personal').on('hide', function()
+	$('#app-content-eosbrowser-personal').on('hide', function()
 	{
-		OCA.ProjectSpaces.App.removePersonalContent();
+		OCA.EOSBrowser.App.removePersonalContent();
 	});
 });
 

@@ -8,33 +8,31 @@
 	<charset>utf8</charset>
 
 	<table>
-		<name>cernbox_project_mapping</name>
+		<name>cernbox_eos_instances</name>
 		<declaration>
 			<field>
-				<name>project_name</name>
+				<name>mgm_url</name>
 				<type>text</type>
 				<notnull>true</notnull>
 				<length>50</length>
 			</field>
 			<field>
-				<name>eos_relative_path</name>
+				<name>root_path</name>
 				<type>text</type>
 				<notnull>true</notnull>
 				<length>50</length>
 			</field>
 			<field>
-				<name>project_owner</name>
+				<name>name</name>
 				<type>text</type>
 				<notnull>true</notnull>
 				<length>50</length>
 			</field>
-
-			<index>
 				<primary>true</primary>
 				<unique>true</unique>
-				<name>eos_projectspaces_mapping_index</name>
+				<name>cernbox_eos_instances</name>
 				<field>
-					<name>project_name</name>
+					<name>name</name>
 				</field>
 			</index>
 		</declaration>
