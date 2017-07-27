@@ -1,6 +1,6 @@
 <?php
 
-use OCA\Files_EosBrowser\Helper;
+use OCA\Files_ProjectSpaces\Helper;
 
 OCP\JSON::checkLoggedIn();
 \OC::$server->getSession()->close();
