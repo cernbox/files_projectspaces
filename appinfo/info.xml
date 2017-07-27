@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <info>
-	<id>files_eosbrowser</id>
-	<name>EOS Browser</name>
-	<description>This app enables the EOS Instance Browser</description>
+	<id>files_projectspaces</id>
+	<name>Files Project Spaces</name>
+	<description>This app enables project spaces</description>
 	<licence>AGPL</licence>
 	<author>CERNBox Team</author>
-	<version>9.1.3</version>
+	<version>9.1.2</version>
 	<types>
 		<filesystem/>
 	</types>

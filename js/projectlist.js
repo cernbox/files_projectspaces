@@ -5,7 +5,7 @@
 	};
 	FileList.prototype = _.extend({}, OCA.Files.FileList.prototype,
 		/** @lends OCA.Sharing.FileList.prototype */ {
-		appName: 'Instance Spaces',
+		appName: 'Project Spaces',
 		isPersonal: false,
 
 		/**
@@ -18,7 +18,7 @@
 			
 			OCA.Files.FileList.prototype.initialize.apply(this, arguments);
 			
-			OC.Plugins.attach('OCA.EOSBrowser.FileList', this);
+			OC.Plugins.attach('OCA.ProjectSpaces.FileList', this);
 			
 			this.isPersonal = options.personalPage;
 			
@@ -29,7 +29,8 @@
 		{
 			var $tr = OCA.Files.FileList.prototype._createRow.apply(this, arguments);
 			
-			if('custom_perm' in fileData) {
+			if('custom_perm' in fileData)
+			{
 				$tr.attr('custom_perm', fileData.custom_perm);
 			}
 			
@@ -38,7 +39,14 @@
 		
 		getListAJAXUrl: function()
 		{
-			return OC.filePath('files_eosbrowser', 'ajax', 'list.php');
+			if(this.isPersonal)
+			{
+				return OC.filePath('files_projectspaces', 'ajax', 'personal_list.php');
+			}
+			else
+			{
+				return OC.filePath('files_projectspaces', 'ajax', 'list.php');
+			}
 		},
 
 		reload: function() {
@@ -132,5 +140,7 @@
 			OCA.Files.FileList.prototype.setFiles.apply(this, arguments);
 		}
 	});
-	OCA.EOSBrowser.FileList = FileList;
+
+
+	OCA.ProjectSpaces.FileList = FileList;
 })();

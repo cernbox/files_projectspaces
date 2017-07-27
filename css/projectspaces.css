@@ -1,0 +1,9 @@
+.nav-icon-projectspaces
+{
+	background-image: url('../img/settings.svg');
+}
+
+.nav-icon-projectspaces-personal
+{
+	background-image: url('../img/user.svg');
+}

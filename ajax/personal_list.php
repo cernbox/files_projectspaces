@@ -1,6 +1,6 @@
 <?php
 
-use OCA\Files_EosBrowser\Helper;
+use OCA\Files_ProjectSpaces\Helper;
 
 OCP\JSON::checkLoggedIn();
 \OC::$server->getSession()->close();
@@ -28,19 +28,14 @@ try {
 			$info['project_readers'] = $project->getProjectReaders();
 			$info['project_writers'] = $project->getProjectWriters();
 			$info['project_admins'] = $project->getProjectAdmins();
-			$projectInfos[] = $info;
-		}
-	}
 
-	foreach($projectInfos as $info) {
-		$info['custom_perm'] = 0;
-		if($username === $info['project_owner']) {
-			$info['custom_perm'] = 1;
-		}
-		if($groupManager->isInGroup($username, $info['project_readers']) ||
-			$groupManager->isInGroup($username, $info['project_writers']) ||
-			$groupManager->isInGroup($username, $info['project_admins'])) {
-			$info['custom_perm'] = 1;
+			if($groupManager->isInGroup($username, $info['project_readers']) ||
+				$groupManager->isInGroup($username, $info['project_writers']) ||
+				$groupManager->isInGroup($username, $info['project_admins'])) {
+				$info['custom_perm'] = 1;
+				$projectInfos[] = $info;
+			}
+
 		}
 	}
 
@@ -56,25 +51,25 @@ try {
 } catch (\OCP\Files\StorageNotAvailableException $e) {
 	\OCP\Util::logException('files', $e);
 	OCP\JSON::error(array(
-			'data' => array(
-					'exception' => '\OCP\Files\StorageNotAvailableException',
-					'message' => $l->t('Storage not available')
-			)
+		'data' => array(
+			'exception' => '\OCP\Files\StorageNotAvailableException',
+			'message' => $l->t('Storage not available')
+		)
 	));
 } catch (\OCP\Files\StorageInvalidException $e) {
 	\OCP\Util::logException('files', $e);
 	OCP\JSON::error(array(
-			'data' => array(
-					'exception' => '\OCP\Files\StorageInvalidException',
-					'message' => $l->t('Storage invalid')
-			)
+		'data' => array(
+			'exception' => '\OCP\Files\StorageInvalidException',
+			'message' => $l->t('Storage invalid')
+		)
 	));
 } catch (\Exception $e) {
 	\OCP\Util::logException('files', $e);
 	OCP\JSON::error(array(
-			'data' => array(
-					'exception' => '\Exception',
-					'message' => $l->t('Unknown error')
-			)
+		'data' => array(
+			'exception' => '\Exception',
+			'message' => $l->t('Unknown error')
+		)
 	));
 }
