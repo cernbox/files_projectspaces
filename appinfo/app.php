@@ -18,14 +18,16 @@ $eventDispatcher->addListener
 	return new \OCA\Files_ProjectSpaces\Activity();
 });
 
+/*
 \OCA\Files\App::getNavigationManager()->add(
 [
 	"id" => 'projectspaces',
 	"appname" => 'files_projectspaces',
 	"script" => 'list.php',
 	"order" => 30,
-	"name" => /*$l->t(*/'All projects'//)
+	"name" => 'All projects'
 ]);
+*/
 
 \OCA\Files\App::getNavigationManager()->add(
 [
