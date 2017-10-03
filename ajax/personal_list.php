@@ -18,7 +18,7 @@ try {
 	$sortDirection = isset($_GET['sortdirection']) ? ($_GET['sortdirection'] === 'desc') : false;
 
 	$projectInfos = [];
-	$projects = $projectMapper->getAllMappings();
+	$projects = $projectMapper->getProjectsUserHasAccess($username);
 	foreach($projects as $project) {
 		$path = 'projects/' . $project->getProjectRelativePath();
 		$info = $instanceManager->get($username, $path);
@@ -28,14 +28,8 @@ try {
 			$info['project_readers'] = $project->getProjectReaders();
 			$info['project_writers'] = $project->getProjectWriters();
 			$info['project_admins'] = $project->getProjectAdmins();
-
-			if($groupManager->isInGroup($username, $info['project_readers']) ||
-				$groupManager->isInGroup($username, $info['project_writers']) ||
-				$groupManager->isInGroup($username, $info['project_admins'])) {
-				$info['custom_perm'] = 1;
-				$projectInfos[] = $info;
-			}
-
+			$info['custom_perm'] = 1;
+			$projectInfos[] = $info;
 		}
 	}
 
