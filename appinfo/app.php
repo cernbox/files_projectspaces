@@ -18,6 +18,7 @@ $eventDispatcher->addListener
 	return new \OCA\Files_ProjectSpaces\Activity();
 });
 
+/*
 \OCA\Files\App::getNavigationManager()->add(
 [
 	"id" => 'projectspaces',
@@ -26,6 +27,7 @@ $eventDispatcher->addListener
 	"order" => 30,
 	"name" => 'All projects'
 ]);
+*/
 
 \OCA\Files\App::getNavigationManager()->add(
 [
