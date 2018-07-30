@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<info>
+    <id>files_projectspaces</id>
+    <name>Project Spaces</name>
+    <description>Add support for project spaces</description>
+    <licence>AGPL</licence>
+    <author>Hugo Gonzalez Labrador (CERN)</author>
+    <version>0.0.1</version>
+    <namespace>Files_ProjectSpaces</namespace>
+    <category>other</category>
+    <dependencies>
+        <owncloud min-version="9.0" />
+    </dependencies>
+</info>
