@@ -29,11 +29,6 @@
 		{
 			var $tr = OCA.Files.FileList.prototype._createRow.apply(this, arguments);
 			
-			if('custom_perm' in fileData)
-			{
-				$tr.attr('custom_perm', fileData.custom_perm);
-			}
-			
 			return $tr;
 		},
 		

@@ -92,15 +92,8 @@ OCA.ProjectSpaces.App =
 		// ajax calls implementation by letting ownCloud to resolve the project as a "share")
 		fileActions.register('dir', 'Open', OC.PERMISSION_READ, '', function (filename, context) 
 		{
-			if(context.$file.attr('custom_perm') === '1')
-			{
-				OCA.Files.App.setActiveView('files', {silent: true});
-				OCA.Files.App.fileList.changeDirectory(context.$file.attr('data-path') + '/' + filename, true, true);
-			}
-			else
-			{
-				OC.dialogs.alert('You do not have permission to browse ' + filename, 'Error');
-			}
+			OCA.Files.App.setActiveView('files', {silent: true});
+			OCA.Files.App.fileList.changeDirectory(context.$file.attr('data-path') + '/' + filename, true, true);
 		});
 		fileActions.setDefault('dir', 'Open');
 		return fileActions;
